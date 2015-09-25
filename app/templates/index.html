@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" xmlns="http://www.w3.org/1999/html">
+
+
+<h3>Системные блоки</h3>
+<div class="panel panel-default">
+  <!-- Default panel contents -->
+ <!-- <div class="panel-heading">Список доступных для продажи готовых системных блоков</div>-->
+  <!-- Table -->
+  <table class="table">
+  <tr>
+  <th>ID</th>
+  <th>Описание</th>
+  <th>Комментарий</th>
+  <th>Стоимость</th>
+  <th>Зарезервировать</th>
+  </tr>
+  {% for pc in PC_list %}
+    <tr>
+        <td>{{ pc.id }}</td>
+        <td><em>CPU:</em> {{ pc.CPU }}<br>
+            <em>MB:</em> {{ pc.MB }}<br>
+            <em>RAM:</em> {{ pc.RAM }} GB<br>
+            <em>HDD:</em> {{ pc.HDD }} GB<br>
+            <em>Video:</em> {{ pc.video }}<br>
+        </td>
+        <td>{{ pc.comment }}</td>
+        <td>{{ pc.price }} грн</td>
+        <td>
+        {% if pc.status.description == "Reserved" %}
+            Зарезервировано
+        {% else %}
+            <form action="/" method="post">
+            <button type="submit" class="btn btn-success" name ="pc_reserve" value="{{ pc.id }}">Зарезервировать</button>
+            </form>
+        {% endif %}
+        </td>
+    </tr>
+  {% endfor %}
+  </table>
+</div>
+
+<br>
+<!-- Monitors table -->
+<h3>Мониторы</h3>
+<div class="panel panel-default">
+<table class="table">
+  <tr>
+    <th>ID</th>
+    <th>Описание</th>
+    <th>Комментарий</th>
+    <th>Стоимость</th>
+    <th>Зарезервировать</th>
+  </tr>
+  {% for monitor in monitor_list %}
+    <tr>
+        <td>{{ monitor.id }}</td>
+        <td><em>Производитель:</em> {{ monitor.manufacturer }}<br>
+            <em>Модель: </em>{{ monitor.monitor_model }}<br>
+            <em>Диагональ:</em> {{ monitor.size }} GB<br>
+        </td>
+        <td>{{ monitor.comment }}</td>
+        <td>{{ monitor.price }} грн</td>
+        <td>
+        {% if monitor.status.description == "Reserved" %}
+            Зарезервировано
+        {% else %}
+            <form action="/" method="post">
+            <button type="submit" class="btn btn-success" name ="monitor_reserve" value="{{ monitor.id }}">Зарезервировать</button>
+            </form>
+        {% endif %}
+        </td>
+    </tr>
+  {% endfor %}
+  </table>
+
+</div>
+
+
+
+
+</div>
+
+
+
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block content %}
+<div class="container">
+
+<h2>Мониторы</h2>
+<div class="panel panel-default">
+  <!-- Default panel contents -->
+ <!-- <div class="panel-heading">Список доступных для продажи готовых системных блоков</div>-->
+  <!-- Table -->
+  <table class="table">
+  <tr>
+  <th>ID</th>
+  <th>Монитор</th>
+  <th>Price</th>
+  <th>History</th>
+  <th>Status</th>
+  <th>Действие</th>
+  </tr>
+  {% for monitor in monitor_list %}
+    <tr>
+        <td>{{ monitor.id }}</td>
+        <td><em>Производитель:</em> {{ monitor.manufacturer }}<br>
+            <em>Модель: {{ monitor.monitor_model }}</em><br>
+            <em>Диагональ: {{ monitor.size }}</em><br>
+            <em>Comment:</em> {{ monitor.comment }}
+        </td>
+        <td>{{ monitor.price }} грн</td>
+        <td><em>Собран:</em> {{ monitor.assembly_by }} ( {{ monitor.assembly_time }})<br>
+            <em>Подтвержден:</em> {{ monitor.approved_by }} ( {{ monitor.approved_time }} )<br>
+            <em>Забронирован:</em> {{ monitor.buyer }} ( {{ monitor.reserved_time }} )<br>
+            <em>Кем продан:</em> {{ monitor.sold_by }} ( {{ monitor.sale_time }} )<br>
+        </td>
+        <td>{{ monitor.status.description }}</td>
+        <td>
+        {% if monitor.status.description == "Reserved" %}
+            <form action="{{ url_for('manage_monitor') }}" method="post">
+                <button type="submit" class="btn btn-primary" name ="approve" value="{{ monitor.id }}">Снять резерв</button>
+            </form>
+            <br>
+            <form action="{{ url_for('manage_monitor') }}" method="post">
+                <button type="submit" class="btn btn-success" name ="sold" value="{{ monitor.id }}">Продать</button>
+            </form>
+
+        {% elif monitor.status.description == "Assembled" and current_user.username in approve %}
+            <form action="{{ url_for('manage_monitor') }}" method="post">
+                <button type="submit" class="btn btn-warning" name ="approve" value="{{ monitor.id }}">Подтвердить</button>
+            </form>
+            <br>
+            <form action="{{ url_for('edit_monitor') }}" method="post">
+                <button type="submit" class="btn btn-primary" name ="edit" value="{{ monitor.id }}">Изменить описание</button>
+            </form>
+
+         {% elif monitor.status.description == "Approved" %}
+            <form action="{{ url_for('manage_monitor') }}" method="post">
+                <button type="submit" class="btn btn-info" name ="reserve" value="{{ monitor.id }}">Зарезервировать</button>
+            </form>
+
+        {% else %}
+            Позиция продана
+        {% endif %}
+        </td>
+    </tr>
+  {% endfor %}
+  </table>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% endblock %}

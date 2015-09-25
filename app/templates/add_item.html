@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block content %}
+
+
+
+
+<div class="container">
+<h2>Добавить новый {{ text }}</h2>
+
+<div style="width: 30%">
+
+
+<form class="form" method="post" role="form">
+    {{ wtf.quick_form(form) }}
+</form>
+
+</div></div>
+
+
+
+
+
+
+{% endblock %}
