@@ -1,12 +1,13 @@
 from app import app, models, db
 from flask import render_template, session, redirect, url_for, flash, request
-from flask_login import login_user, current_user
+from flask_login import login_user, current_user, logout_user, login_required
 from flask.ext.ldap3_login.forms import LDAPLoginForm
 from app.ldap import User
 from config import ACCESS_ADD_ITEM, ACCESS_APPROVE
 #from app.models import PC
 from datetime import datetime
 from app.forms import AddPC, AddMonitor
+
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -22,8 +23,8 @@ def index():
     monitor_list = models.Monitor.query.filter(models.Monitor.status_id.in_([2, 3]))
 
     if request.method == 'POST' and request.form.get("pc_reserve"):
-        pc_id = request.form.get("reserve")
-        print(request.form.get("reserve"))
+        pc_id = request.form.get("pc_reserve")
+        print(request.form.get("pc_reserve"))
         print(models.PC.query.filter_by(id=pc_id).first().status_id)
         if models.PC.query.filter_by(id=pc_id).first().status.description == 'Reserved':
             print('Already booked :-(')
@@ -36,8 +37,8 @@ def index():
         db.session.commit()
 
     elif request.method == 'POST' and request.form.get("monitor_reserve"):
-        monitor_id = request.form.get("reserve")
-        print(request.form.get("reserve"))
+        monitor_id = request.form.get("monitor_reserve")
+        print(request.form.get("monitor_reserve"))
         print(models.Monitor.query.filter_by(id=monitor_id).first().status_id)
         if models.Monitor.query.filter_by(id=monitor_id).first().status.description == 'Reserved':
             print('Already booked :-(')
@@ -281,3 +282,11 @@ def test():
 #    if not current_user.is_authenticated:
 #        return redirect(url_for('login'))
     return render_template('test.html', approve=ACCESS_APPROVE, add_item=ACCESS_ADD_ITEM)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.')
+    return redirect(url_for('index'))
