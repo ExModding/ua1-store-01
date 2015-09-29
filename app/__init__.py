@@ -9,12 +9,12 @@ from flask.ext.sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config.from_object('config')
-login_manager = LoginManager(app)              # Setup a Flask-Login Manager
+login_manager = LoginManager()              # Setup a Flask-Login Manager
 ldap_manager = LDAP3LoginManager(app)          # Setup a LDAP3 Login Manager
 bootstrap = Bootstrap(app)                     # Setup frontend Framework engine
 manager = Manager(app)
 db = SQLAlchemy(app)
 # admin = Admin(app)
+login_manager.init_app(app)
 
-
-from app import views, admin_page
+from app import views, admin_page, ldap

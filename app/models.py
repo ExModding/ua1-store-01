@@ -49,11 +49,6 @@ class Monitor(db.Model):
         return '<Monitor %r>' % self.manufacturer
 
 
-
-
-
-
-
 class ItemStatus(db.Model):
     tablename__ = 'item_status'
     id = db.Column(db.Integer, primary_key=True)
@@ -61,3 +56,11 @@ class ItemStatus(db.Model):
 
     def __repr__(self):
         return '<ItemStatus %r>' % self.description
+
+
+class User(db.Model):
+    tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    data = db.Column(db.String(500))
+    username = db.Column(db.String(64))
+    dn = db.Column(db.String(500))

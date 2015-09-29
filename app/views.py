@@ -1,24 +1,36 @@
-from app import app, models, db
-from flask import render_template, session, redirect, url_for, flash, request
-from flask_login import login_user, current_user, logout_user, login_required
+from app import app, models, db, login_manager
+from flask import render_template, session, redirect, url_for, flash, request, g
+from flask_login import login_user, current_user, logout_user, login_required, user_loaded_from_cookie
 from flask.ext.ldap3_login.forms import LDAPLoginForm
-from app.ldap import User
+from app.ldap import User, LoginManager
 from config import ACCESS_ADD_ITEM, ACCESS_APPROVE
 #from app.models import PC
 from datetime import datetime
 from app.forms import AddPC, AddMonitor
+from app.ldap import users
 
+login_manager.login_view = 'login'
+print('******', users)
+
+#@login_manager.user_loader
+#def load_user(id):
+#    return User.get_id(id)
 
 
 @app.route('/', methods=['GET', 'POST'])
-@app.route('/index', methods=['GET', 'POST'])
-def index():
-    # Redirect users who are not logged in.#
-    if not current_user.is_authenticated:
-        return redirect(url_for('login'))
-    else:
-        user = current_user.username
 
+#@login_manager.user_loader
+def index():
+    if not current_user.is_authenticated:
+            return redirect(url_for('login'))
+    print('******', users)
+    # Redirect users who are not logged in.#
+#    if not current_user.is_authenticated:
+#        return redirect(url_for('login'))
+#    else:
+#        user = current_user.username
+    user = current_user
+    print(session)
     pc_list = models.PC.query.filter(models.PC.status_id.in_([2, 3]))
     monitor_list = models.Monitor.query.filter(models.Monitor.status_id.in_([2, 3]))
 
@@ -52,11 +64,12 @@ def index():
 
     return render_template("index.html", title="Home", approve=ACCESS_APPROVE, add_item=ACCESS_ADD_ITEM,
                            PC_list=pc_list,
-                           monitor_list=monitor_list)
+                           monitor_list=monitor_list, user=user)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    user=current_user
     # Instantiate a LDAPLoginForm which has a validator to check if the user
     # exists in LDAP.
     form = LDAPLoginForm()
@@ -66,8 +79,9 @@ def login():
         print(form.user)
         login_user(form.user)  # Tell flask-login to log them in.
         flash('Вы успешно авторизованы под именем {}'.format(current_user.username))
-        return redirect('/')  # Send them home
-    return render_template('login.html', form=form, approve=ACCESS_APPROVE, add_item=ACCESS_ADD_ITEM)
+
+        return redirect(request.args.get('next') or url_for('index'))  # Send them home
+    return render_template('login.html', form=form, approve=ACCESS_APPROVE, add_item=ACCESS_ADD_ITEM, user=user)
 
 
 @app.route('/reserved')
@@ -78,9 +92,13 @@ def reserved():
 
 
 @app.route('/add_pc', methods=['GET', 'POST'])
+@login_required
 def add_pc():
-    if not current_user.is_authenticated and current_user.username not in ACCESS_ADD_ITEM:
-        return redirect(url_for('login'))
+#    if current_user.is_authenticated:
+#        if current_user.username not in ACCESS_ADD_ITEM:
+#            return redirect(url_for('login'))
+#    else:
+#        return redirect(url_for('login'))
 
     form = AddPC()
     text = 'системный блок'
@@ -103,7 +121,10 @@ def add_pc():
 
 @app.route('/add_monitor', methods=['GET', 'POST'])
 def add_monitor():
-    if not current_user.is_authenticated and current_user.username not in ACCESS_ADD_ITEM:
+    if current_user.is_authenticated:
+        if current_user.username not in ACCESS_ADD_ITEM:
+            return redirect(url_for('login'))
+    else:
         return redirect(url_for('login'))
 
     form = AddMonitor()
@@ -127,14 +148,21 @@ def add_monitor():
 
 @app.route('/add_other')
 def add_other():
-    if not current_user.is_authenticated and current_user.username not in ACCESS_ADD_ITEM:
+    if current_user.is_authenticated:
+        if current_user.username not in ACCESS_ADD_ITEM:
+            return redirect(url_for('login'))
+    else:
         return redirect(url_for('login'))
+
     return render_template('add_item.html', approve=ACCESS_APPROVE, add_item=ACCESS_ADD_ITEM)
 
 
 @app.route('/manage_pc', methods=['GET', 'POST'])
 def manage_pc():
-    if not current_user.is_authenticated and current_user.username not in ACCESS_ADD_ITEM:
+    if current_user.is_authenticated:
+        if current_user.username not in ACCESS_ADD_ITEM:
+            return redirect(url_for('login'))
+    else:
         return redirect(url_for('login'))
     pc_list = models.PC.query.all()
     if request.method == 'POST':
@@ -178,7 +206,10 @@ def manage_pc():
 
 @app.route('/manage_monitor', methods=['GET', 'POST'])
 def manage_monitor():
-    if not current_user.is_authenticated and current_user.username not in ACCESS_ADD_ITEM:
+    if current_user.is_authenticated:
+        if current_user.username not in ACCESS_ADD_ITEM:
+            return redirect(url_for('login'))
+    else:
         return redirect(url_for('login'))
     monitor_list = models.Monitor.query.all()
     if request.method == 'POST':
@@ -222,7 +253,10 @@ def manage_monitor():
 
 @app.route('/edit_pc', methods=['GET', 'POST'])
 def edit_pc():
-    if not current_user.is_authenticated and current_user.username not in ACCESS_ADD_ITEM:
+    if current_user.is_authenticated:
+        if current_user.username not in ACCESS_ADD_ITEM:
+            return redirect(url_for('login'))
+    else:
         return redirect(url_for('login'))
     form = AddPC()
     if request.method == 'POST'and request.form.get("edit"):
@@ -251,7 +285,10 @@ def edit_pc():
 
 @app.route('/edit_monitor', methods=['GET', 'POST'])
 def edit_monitor():
-    if not current_user.is_authenticated and current_user.username not in ACCESS_ADD_ITEM:
+    if current_user.is_authenticated:
+        if current_user.username not in ACCESS_ADD_ITEM:
+            return redirect(url_for('login'))
+    else:
         return redirect(url_for('login'))
     form = AddMonitor()
     if request.method == 'POST'and request.form.get("edit"):
